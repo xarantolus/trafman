@@ -12,7 +12,7 @@ create table RepoStats (
     stars int not null,
     forks int not null,
     size int not null,
-    subscribers int not null,
+    watchers int not null,
     primary key (repo_id, date)
 );
 

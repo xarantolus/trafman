@@ -140,10 +140,10 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		return fmt.Errorf("inserting basic repo: %s", err.Error())
 	}
 
-	_, err = m.Database.Exec(`insert into RepoStats(repo_id, stars, forks, size, subscribers)
+	_, err = m.Database.Exec(`insert into RepoStats(repo_id, stars, forks, size, watchers)
 								 values ($1, $2, $3, $4, $5)
-  							on conflict (repo_id, date) do update set stars=EXCLUDED.stars, forks=EXCLUDED.forks, size=EXCLUDED.size, subscribers=EXCLUDED.subscribers`,
-		repo.ID, repo.GetStargazersCount(), repo.GetForksCount(), repo.GetSize(), repo.GetSubscribersCount())
+  							on conflict (repo_id, date) do update set stars=EXCLUDED.stars, forks=EXCLUDED.forks, size=EXCLUDED.size, watchers=EXCLUDED.watchers`,
+		repo.ID, repo.GetStargazersCount(), repo.GetForksCount(), repo.GetSize(), repo.GetWatchersCount())
 	if err != nil {
 		return fmt.Errorf("inserting basic repo info: %s", err.Error())
 	}

@@ -4,20 +4,43 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/go-github/v43/github"
 )
 
 func (m *Manager) StartBackgroundTasks() (err error) {
 
-	go func() {
-		err := m.runReposUpdate()
-		if err != nil {
-			panic(err)
-		}
-	}()
+	go m.runBackgroundTasks()
 
 	return
+}
+
+func (m *Manager) runBackgroundTasks() {
+	for {
+		log.Printf("Running background tasks")
+
+		err := m.runReposUpdate()
+		if err != nil {
+			log.Printf("[Warning] Running repo data update: %s\n", err.Error())
+		}
+
+		nextTime := getNextDay()
+		waitDur := time.Until(nextTime)
+		if waitDur < 0 {
+			panic("invalid nextTime when running background tasks: got" + nextTime.String())
+		}
+
+		log.Printf("Running next background tasks on %s", nextTime.String())
+		time.Sleep(waitDur)
+	}
+}
+
+// getNextDay returns a time after midnight
+func getNextDay() time.Time {
+	now := time.Now().UTC()
+
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 5, 0, 0, time.UTC)
 }
 
 func getOwnerName(repo *github.Repository) string {

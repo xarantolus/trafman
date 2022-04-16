@@ -7,7 +7,9 @@ services:
     restart: always
     depends_on:
       - postgres
-    build: app/.
+    build:
+      context: app
+      network: host
     ports:
       - 9319:9319
     links:

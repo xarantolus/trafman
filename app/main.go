@@ -7,10 +7,11 @@ import (
 	"log"
 	"net/http"
 
+	"xarantolus/trafman/config"
+
 	"github.com/google/go-github/v43/github"
 	_ "github.com/lib/pq"
 	"golang.org/x/oauth2"
-	"xarantolus/trafman/config"
 )
 
 func main() {
@@ -28,30 +29,17 @@ func main() {
 
 	client := github.NewClient(token)
 
+	// Connect to database
 	psqlInfo := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.DBName)
 	database, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		log.Fatalf("connecting to database: %s", err)
 	}
-
-	stats := database.Stats()
-	log.Printf("stats: %#v\n", stats)
-
-	rows, err := database.Query("SELECT * from repository")
+	err = database.Ping()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("pinging database: %s", err.Error())
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var id int
-		var repo, user string
-		err = rows.Scan(&id, &user, &repo)
-		if err != nil {
-			panic(err)
-		}
 
-		fmt.Printf("id=%d, un=%s, rn=%s", id, repo, user)
-	}
 	views, _, err := client.Repositories.ListTrafficViews(ctx, "xarantolus", "filtrite", &github.TrafficBreakdownOptions{
 		Per: "day",
 	})

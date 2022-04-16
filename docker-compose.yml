@@ -7,9 +7,7 @@ services:
     restart: always
     depends_on:
       - trafman_db
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    build: app/.
     ports:
       - 9319:9319
     links:

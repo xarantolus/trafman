@@ -83,12 +83,12 @@ func (m *Manager) fetchAllRepos(ctx context.Context) (repos []*github.Repository
 			Affiliation: "owner,collaborator,organization_member",
 
 			ListOptions: github.ListOptions{
-				Page: repoPage,
-				// PerPage: 100,
+				Page:    repoPage,
+				PerPage: 100,
 			},
 		})
 		if err != nil || len(fetched) == 0 {
-			return nil, err
+			return repos, err
 		}
 
 		repos = append(repos, fetched...)
@@ -103,6 +103,29 @@ func (m *Manager) fetchAllRepos(ctx context.Context) (repos []*github.Repository
 	return
 }
 
+func (m *Manager) fetchAllReleases(ctx context.Context, repo *github.Repository) (releases []*github.RepositoryRelease, err error) {
+	var page = 1
+
+	for {
+		fetched, resp, err := m.GitHub.Repositories.ListReleases(ctx, getOwnerName(repo), repo.GetName(), &github.ListOptions{
+			Page:    page,
+			PerPage: 100,
+		})
+		if err != nil || len(fetched) == 0 {
+			return releases, err
+		}
+
+		releases = append(releases, fetched...)
+
+		page = resp.NextPage
+		if page == 0 {
+			break
+		}
+	}
+
+	return
+}
+
 func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err error) {
 	var (
 		repoUser = getOwnerName(repo)
@@ -110,7 +133,7 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 	)
 	log.Printf("[Background] Working on %s/%s", repoUser, repoName)
 
-	_, err = m.Database.Exec(`insert into Repository(id, username, name, description, is_fork) values ($1, $2, $3, $4, $5)
+	_, err = m.Database.Exec(`insert into Repositories(id, username, name, description, is_fork) values ($1, $2, $3, $4, $5)
 			on conflict (id) do update set username=EXCLUDED.username, name=EXCLUDED.name, description=EXCLUDED.description, is_fork=EXCLUDED.is_fork`,
 		repo.ID, repoUser, repoName, repo.GetDescription(), repo.GetFork())
 	if err != nil {
@@ -186,6 +209,33 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		)
 		if err != nil {
 			return fmt.Errorf("inserting traffic referrer data: %s", err.Error())
+		}
+	}
+
+	releases, err := m.fetchAllReleases(ctx, repo)
+	if err != nil {
+		return fmt.Errorf("fetching releases: %s", err.Error())
+	}
+
+	for _, release := range releases {
+		_, err = m.Database.Exec(`insert into Releases(id, repo_id, tag_name, created, name, body)
+								 values ($1, $2, $3, $4, $5, $6)
+			on conflict (id) do update set repo_id=EXCLUDED.repo_id, tag_name=EXCLUDED.tag_name, created=EXCLUDED.created, name=EXCLUDED.name, body=EXCLUDED.body`,
+			release.ID, repo.ID, release.GetTagName(), release.GetCreatedAt().Time, release.GetName(), release.GetBody(),
+		)
+		if err != nil {
+			return fmt.Errorf("inserting basic release data: %s", err.Error())
+		}
+
+		for _, asset := range release.Assets {
+			_, err = m.Database.Exec(`insert into ReleaseAssets(id, release_id, filename, download_count, updated_at, size)
+								 values ($1, $2, $3, $4, $5, $6)
+			on conflict (id, release_id) do update set filename=EXCLUDED.filename, download_count=EXCLUDED.download_count, updated_at=EXCLUDED.updated_at, size=EXCLUDED.size`,
+				asset.ID, release.ID, asset.GetName(), asset.GetDownloadCount(), asset.GetUpdatedAt().Time, asset.GetSize(),
+			)
+			if err != nil {
+				return fmt.Errorf("inserting release asset data: %s", err.Error())
+			}
 		}
 	}
 

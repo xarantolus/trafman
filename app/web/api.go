@@ -23,7 +23,7 @@ func (s *Server) handleReposAPI(w http.ResponseWriter, r *http.Request) (err err
 	rows, err := s.Manager.Database.Query(`
 		WITH repos AS (
 			SELECT  DISTINCT ON (r.id) r.id, r.username, r.name, r.description, r.is_fork, s.stars, s.forks, s.size, s.date
-				FROM Repository r
+				FROM Repositories r
 				join RepoStats s on r.id = s.repo_id
 			ORDER BY r.id, s.date DESC
 		)

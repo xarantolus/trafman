@@ -40,7 +40,7 @@ func main() {
 
 	var manager = &store.Manager{
 		Database: database,
-		Github:   ghClient,
+		GitHub:   ghClient,
 	}
 
 	err = manager.StartBackgroundTasks()

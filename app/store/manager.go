@@ -8,5 +8,5 @@ import (
 
 type Manager struct {
 	Database *sql.DB
-	Github   *github.Client
+	GitHub   *github.Client
 }

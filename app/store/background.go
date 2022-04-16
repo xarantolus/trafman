@@ -1,39 +1,169 @@
 package store
 
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/google/go-github/v43/github"
+)
+
 func (m *Manager) StartBackgroundTasks() (err error) {
+
+	go func() {
+		err := m.runReposUpdate()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	return
 }
 
-/*
+func getOwnerName(repo *github.Repository) string {
+	owner := "unknown"
+	if repo.Owner != nil {
+		owner = repo.Owner.GetLogin()
+	}
+	return owner
+}
 
-	views, _, err := ghClient.Repositories.ListTrafficViews(ctx, "xarantolus", "filtrite", &github.TrafficBreakdownOptions{
+func (m *Manager) runReposUpdate() (err error) {
+	ctx := context.Background()
+
+	repos, err := m.fetchAllRepos(ctx)
+	if err != nil {
+		return
+	}
+
+	for _, repo := range repos {
+		rerr := m.processRepo(ctx, repo)
+		if rerr != nil {
+			log.Printf("[Warning] Updating repo data for %s/%s: %s\n", getOwnerName(repo), repo.GetName(), rerr.Error())
+		}
+	}
+
+	log.Printf("Finished working on %d repos", len(repos))
+
+	return
+}
+
+func (m *Manager) fetchAllRepos(ctx context.Context) (repos []*github.Repository, err error) {
+	var repoPage = 1
+
+	for {
+		log.Printf("Fetching page %d of repositories", repoPage)
+
+		// Get Repos for the currently logged in user
+		fetched, resp, err := m.GitHub.Repositories.List(ctx, "", &github.RepositoryListOptions{
+			Visibility:  "all",
+			Affiliation: "owner,collaborator,organization_member",
+
+			ListOptions: github.ListOptions{
+				Page: repoPage,
+				// PerPage: 100,
+			},
+		})
+		if err != nil || len(fetched) == 0 {
+			return nil, err
+		}
+
+		repos = append(repos, fetched...)
+		log.Printf("Got %d repos, now have %d", len(fetched), len(repos))
+
+		repoPage = resp.NextPage
+		if repoPage == 0 {
+			break
+		}
+	}
+
+	return
+}
+
+func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err error) {
+	var (
+		repoUser = getOwnerName(repo)
+		repoName = repo.GetName()
+	)
+	log.Printf("[Background] Working on %s/%s", repoUser, repoName)
+
+	_, err = m.Database.Exec(`insert into Repository(id, username, name) values ($1, $2, $3)
+			on conflict (id) do update set username=EXCLUDED.username, name=EXCLUDED.name`, repo.ID, repoUser, repoName)
+	if err != nil {
+		return fmt.Errorf("inserting basic repo: %s", err.Error())
+	}
+
+	_, err = m.Database.Exec(`insert into RepoStats(repo_id, stars, forks, size, subscribers)
+								 values ($1, $2, $3, $4, $5)
+  							on conflict (repo_id, date) do update set stars=EXCLUDED.stars, forks=EXCLUDED.forks, size=EXCLUDED.size, subscribers=EXCLUDED.subscribers`,
+		repo.ID, repo.GetStargazersCount(), repo.GetForksCount(), repo.GetSize(), repo.GetSubscribersCount())
+	if err != nil {
+		return fmt.Errorf("inserting basic repo info: %s", err.Error())
+	}
+
+	views, _, err := m.GitHub.Repositories.ListTrafficViews(ctx, repoUser, repoName, &github.TrafficBreakdownOptions{
 		Per: "day",
 	})
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("fetching traffic views: %s", err.Error())
+	}
+	for _, day := range views.Views {
+		_, err = m.Database.Exec(`insert into RepoTrafficViews(repo_id, date, count, uniques)
+								 values ($1, $2, $3, $4)
+  							on conflict (repo_id, date) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
+			repo.ID, day.GetTimestamp().Time, day.GetCount(), day.GetUniques(),
+		)
+		if err != nil {
+			return fmt.Errorf("inserting traffic view data: %s", err.Error())
+		}
 	}
 
-	fmt.Printf("%#v\n", views)
-
-	paths, _, err := ghClient.Repositories.ListTrafficPaths(ctx, "xarantolus", "filtrite")
+	paths, _, err := m.GitHub.Repositories.ListTrafficPaths(ctx, repoUser, repoName)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("fetching traffic paths: %s", err.Error())
+	}
+	for _, path := range paths {
+		_, err = m.Database.Exec(`insert into RepoTrafficPaths(repo_id, path, title, count, uniques)
+								 values ($1, $2, $3, $4, $5)
+  							on conflict (repo_id, date, path) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
+			repo.ID, path.GetPath(), path.GetTitle(), path.GetCount(), path.GetUniques(),
+		)
+		if err != nil {
+			return fmt.Errorf("inserting traffic path data: %s", err.Error())
+		}
 	}
 
-	fmt.Printf("%#v\n", paths)
-
-	refs, _, err := ghClient.Repositories.ListTrafficReferrers(ctx, "xarantolus", "filtrite")
+	refs, _, err := m.GitHub.Repositories.ListTrafficReferrers(ctx, repoUser, repoName)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("fetching traffic referrers: %s", err.Error())
 	}
-	fmt.Printf("%#v\n", refs)
+	for _, ref := range refs {
+		_, err = m.Database.Exec(`insert into RepoTrafficReferrers(repo_id, referrer, count, uniques)
+								 values ($1, $2, $3, $4)
+  							on conflict (repo_id, date, referrer) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
+			repo.ID, ref.GetReferrer(), ref.GetCount(), ref.GetUniques(),
+		)
+		if err != nil {
+			return fmt.Errorf("inserting traffic referrer data: %s", err.Error())
+		}
+	}
 
-	clones, _, err := ghClient.Repositories.ListTrafficClones(ctx, "xarantolus", "filtrite", &github.TrafficBreakdownOptions{
+	clones, _, err := m.GitHub.Repositories.ListTrafficClones(ctx, repoUser, repoName, &github.TrafficBreakdownOptions{
 		Per: "day",
 	})
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("fetching traffic clones: %s", err.Error())
 	}
-	fmt.Printf("%#v\n", clones)
-*/
+	for _, clone := range clones.Clones {
+		_, err = m.Database.Exec(`insert into RepoTrafficClones(repo_id, date, count, uniques)
+								 values ($1, $2, $3, $4)
+  							on conflict (repo_id, date) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
+			repo.ID, clone.GetTimestamp().Time, clone.GetCount(), clone.GetUniques(),
+		)
+		if err != nil {
+			return fmt.Errorf("inserting traffic referrer data: %s", err.Error())
+		}
+	}
+
+	return
+}

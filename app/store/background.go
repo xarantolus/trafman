@@ -28,7 +28,7 @@ func (m *Manager) runBackgroundTasks() {
 		nextTime := getNextDay()
 		waitDur := time.Until(nextTime)
 		if waitDur < 0 {
-			panic("invalid nextTime when running background tasks: got" + nextTime.String())
+			panic("invalid nextTime when running background tasks: got " + nextTime.String())
 		}
 
 		log.Printf("Running next background tasks on %s", nextTime.String())
@@ -40,7 +40,7 @@ func (m *Manager) runBackgroundTasks() {
 func getNextDay() time.Time {
 	now := time.Now().UTC()
 
-	return time.Date(now.Year(), now.Month(), now.Day(), 0, 5, 0, 0, time.UTC)
+	return time.Date(now.Year(), now.Month(), now.Day()+1, 0, 5, 0, 0, time.UTC)
 }
 
 func getOwnerName(repo *github.Repository) string {

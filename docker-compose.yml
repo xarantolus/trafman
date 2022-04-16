@@ -30,5 +30,3 @@ services:
       # - ./postgres-data:/var/lib/postgresql/data
       - ./database/backups:/home/backups
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "5432:5432"

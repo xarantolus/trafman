@@ -2,26 +2,45 @@ version: '3.4'
 
 services:
   trafman:
+    container_name: trafman_app
     image: trafman
+    restart: always
+    depends_on:
+      - trafman_db
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
-      - 2000:2000
+      - 9319:9319
+    links:
+      - postgres:postgres
     environment:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - APP_PORT=9319
 
-  trafman_db:
-    image: trafman_db
-    container_name: trafman_database
+  postgres:
+    container_name: postgres
+    restart: always
     build: database/.
     environment:
-      POSTGRES_USER: trafman_admin
-      POSTGRES_PASSWORD: trafman_admin
-      POSTGRES_DB: trafman_database
-    expose:
-      - "5433"
-    ports:
-      - "5433:5433"
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=trafman_database
     volumes:
+      # - ./postgres-data:/var/lib/postgresql/data
       - ./database/backups:/home/backups
+    ports:
+      - "5432:5432"
+
+  pgweb:
+    container_name: pgweb
+    restart: always
+    image: sosedoff/pgweb
+    ports:
+      - "8081:8081"
+    links:
+      - postgres:postgres
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/trafman_database?sslmode=disable
+    depends_on:
+      - postgres

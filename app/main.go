@@ -43,9 +43,13 @@ func main() {
 		GitHub:   ghClient,
 	}
 
-	err = manager.StartBackgroundTasks()
-	if err != nil {
-		log.Fatalf("starting background tasks: %s\n", err.Error())
+	if cfg.DisableBackgroundChecks {
+		log.Printf("Not running background tasks")
+	} else {
+		err = manager.StartBackgroundTasks()
+		if err != nil {
+			log.Fatalf("starting background tasks: %s\n", err.Error())
+		}
 	}
 
 	defer panic("web server should never stop, but did")

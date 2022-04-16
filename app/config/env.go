@@ -3,13 +3,15 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
 type Config struct {
-	GitHubToken string
-	AppPort     string
-	DB          DB
+	GitHubToken             string
+	AppPort                 string
+	DisableBackgroundChecks bool
+	DB                      DB
 }
 
 type DB struct {
@@ -36,6 +38,12 @@ func FromEnvironment() (cfg Config, err error) {
 		return
 	}
 
+	disableBGChecks, err := strconv.ParseBool(getOrDefault("APP_DISABLE_BACKGROUND_CHECKS", "false"))
+	if err != nil {
+		err = fmt.Errorf("parsing APP_DISABLE_BACKGROUND_CHECKS environment variable: %s", err.Error())
+		return
+	}
+
 	return Config{
 		DB: DB{
 			Host:     getOrDefault("DB_HOST", "postgres"),
@@ -45,7 +53,8 @@ func FromEnvironment() (cfg Config, err error) {
 			DBName:   getOrDefault("DB_NAME", "trafman_database"),
 		},
 
-		AppPort:     getOrDefault("APP_PORT", "9319"),
-		GitHubToken: ghToken,
+		DisableBackgroundChecks: disableBGChecks,
+		AppPort:                 getOrDefault("APP_PORT", "9319"),
+		GitHubToken:             ghToken,
 	}, nil
 }

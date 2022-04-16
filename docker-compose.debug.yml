@@ -1,23 +1,6 @@
 version: '3.4'
 
 services:
-  trafman:
-    container_name: trafman_app
-    image: trafman
-    restart: always
-    depends_on:
-      - postgres
-    build:
-      context: app
-      network: host
-    ports:
-      - 9319:9319
-    links:
-      - postgres:postgres
-    environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - APP_PORT=9319
-
   postgres:
     container_name: postgres
     restart: always

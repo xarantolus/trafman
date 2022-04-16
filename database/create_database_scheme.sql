@@ -1,7 +1,9 @@
 create table Repository (
     id int primary key,
     username text not null,
-    name text not null
+    name text not null,
+    description text not null,
+    is_fork boolean not null
 );
 
 create table RepoStats (

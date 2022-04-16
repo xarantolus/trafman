@@ -110,8 +110,9 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 	)
 	log.Printf("[Background] Working on %s/%s", repoUser, repoName)
 
-	_, err = m.Database.Exec(`insert into Repository(id, username, name) values ($1, $2, $3)
-			on conflict (id) do update set username=EXCLUDED.username, name=EXCLUDED.name`, repo.ID, repoUser, repoName)
+	_, err = m.Database.Exec(`insert into Repository(id, username, name, description, is_fork) values ($1, $2, $3, $4, $5)
+			on conflict (id) do update set username=EXCLUDED.username, name=EXCLUDED.name, description=EXCLUDED.description, is_fork=EXCLUDED.is_fork`,
+		repo.ID, repoUser, repoName, repo.GetDescription(), repo.GetFork())
 	if err != nil {
 		return fmt.Errorf("inserting basic repo: %s", err.Error())
 	}

@@ -6,7 +6,7 @@ services:
     image: trafman
     restart: always
     depends_on:
-      - trafman_db
+      - postgres
     build: app/.
     ports:
       - 9319:9319

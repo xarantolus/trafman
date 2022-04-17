@@ -1,11 +1,17 @@
+import RepoListing from '@/views/RepoListing.vue'
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import HomeView from '@/views/HomeView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
+    path: '/home',
     name: 'home',
     component: HomeView
+  },
+  {
+    path: "/",
+    name: 'repos',
+    component: RepoListing
   },
   {
     path: '/about',

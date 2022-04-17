@@ -27,6 +27,7 @@ func (s *Server) Run(cfg config.Config) (err error) {
 
 	api := s.router.PathPrefix("/api/v1").Subrouter()
 	api.HandleFunc("/repos", wrapError(s.handleReposAPI))
+	api.HandleFunc("/repo/{username}/{reponame}/stats", wrapError(s.handleRepoStatsAPI))
 
 	// Get the correct frontend path and serve it from every route
 	subFS, err := fs.Sub(s.Frontend, "frontend")

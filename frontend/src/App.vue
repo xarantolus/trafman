@@ -1,11 +1,39 @@
 <template>
-  <nav>
-    <router-link to="/">Repos</router-link> |
-    <router-link to="/home">Home</router-link> |
-    <router-link to="/about">About</router-link>
+  <nav class="navbar">
+    <!-- TODO: Improve this for mobile, add icon etc. -->
+    <div class="navbar-brand">
+      <router-link to="/" class="navbar-item">
+        <img class="logo-image invert-dm" src="/img/icons/safari-pinned-tab.svg" alt="Repositories">
+      </router-link>
+      <a class="navbar-burger" :class="{ 'is-active': menuOpen }" v-on:click="menuOpen = !menuOpen">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-menu" :class="{ 'is-active': menuOpen }">
+      <div class="navbar-start">
+        <router-link class="navbar-item" to="/">
+          Repositories
+        </router-link>
+      </div>
+    </div>
   </nav>
   <router-view />
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  name: 'App',
+  data() {
+    return {
+      menuOpen: false,
+    }
+  }
+});
+</script>
 
 <style>
 @import "../node_modules/bulma/css/bulma.min.css";
@@ -50,6 +78,16 @@ body {
   height: 100vh;
 }
 
+.navbar {
+  position: sticky;
+  width: 100%;
+  height: 3%;
+  top: 0;
+  padding: 0;
+  filter: drop-shadow(0 0 .25rem var(--font-color));
+  margin-bottom: 10px;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -68,6 +106,6 @@ nav a {
 }
 
 nav a.router-link-exact-active {
-  color: #42b983;
+  color: var(--green);
 }
 </style>

@@ -4,10 +4,10 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Run debug docker compose",
+            "label": "Build",
             "isBackground": true,
             "type": "shell",
-            "command": "docker-compose -f docker-compose.debug.yml build && docker-compose -f docker-compose.debug.yml up",
+            "command": "./build.sh docker-compose.debug.yml",
 
             // Run in background: https://stackoverflow.com/a/54017304
             "problemMatcher": [

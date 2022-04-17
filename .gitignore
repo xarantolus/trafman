@@ -2,3 +2,5 @@
 trafmon
 *debug_bin
 .env
+dist
+app/frontend

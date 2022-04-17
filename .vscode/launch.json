@@ -10,7 +10,7 @@
             "request": "launch",
             "envFile": "${workspaceFolder}/.env",
             "mode": "auto",
-            "preLaunchTask": "Run debug docker compose",
+            "preLaunchTask": "Build",
             "program": "${workspaceFolder}/app",
             "env": {
                 "DB_HOST": "localhost",

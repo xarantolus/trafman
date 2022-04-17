@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"log"
 	"time"
@@ -14,6 +15,9 @@ import (
 	"github.com/xarantolus/trafmon/app/web"
 	"golang.org/x/oauth2"
 )
+
+//go:embed frontend
+var frontendFS embed.FS
 
 func main() {
 	// Set one up @ https://github.com/settings/tokens/new
@@ -64,7 +68,7 @@ func main() {
 	}
 
 	defer panic("web server should never stop, but did")
-	err = (&web.Server{Manager: manager}).Run(cfg)
+	err = (&web.Server{Manager: manager, Frontend: frontendFS}).Run(cfg)
 	if err != nil {
 		log.Fatalf("[Startup] Running web server: %s\n", err.Error())
 	}

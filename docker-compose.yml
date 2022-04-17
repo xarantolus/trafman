@@ -4,7 +4,6 @@ services:
   trafmon:
     container_name: trafmon_app
     image: trafmon
-    restart: always
     depends_on:
       - postgres
     build:
@@ -20,7 +19,6 @@ services:
 
   postgres:
     container_name: postgres
-    restart: always
     build: database/.
     environment:
       - POSTGRES_USER=postgres

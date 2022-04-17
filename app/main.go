@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/go-github/v43/github"
 	_ "github.com/lib/pq"
@@ -33,9 +34,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("connecting to database: %s", err)
 	}
-	err = database.Ping()
+
+	var tries = 1
+	for {
+		err = database.Ping()
+		if err == nil || tries > 30 {
+			break
+		}
+		log.Printf("[Startup] Waiting for database to come online: %s", err.Error())
+		time.Sleep(time.Second * time.Duration(tries))
+		tries++
+	}
 	if err != nil {
-		log.Fatalf("pinging database: %s", err.Error())
+		log.Fatalf("[Startup] Database did not come online: %s", err.Error())
 	}
 
 	var manager = &store.Manager{
@@ -44,7 +55,7 @@ func main() {
 	}
 
 	if cfg.DisableBackgroundChecks {
-		log.Printf("Not running background tasks")
+		log.Printf("[Startup] Not running background tasks")
 	} else {
 		err = manager.StartBackgroundTasks()
 		if err != nil {

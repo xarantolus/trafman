@@ -50,7 +50,7 @@ func FromEnvironment() (cfg Config, err error) {
 			Port:     getOrDefault("DB_PORT", "5432"),
 			User:     getOrDefault("DB_USER", "postgres"),
 			Password: getOrDefault("DB_PASSWORD", "postgres"),
-			DBName:   getOrDefault("DB_NAME", "trafman_database"),
+			DBName:   getOrDefault("DB_NAME", "trafmon_database"),
 		},
 
 		DisableBackgroundChecks: disableBGChecks,

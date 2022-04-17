@@ -1,9 +1,9 @@
 version: '3.4'
 
 services:
-  trafman:
-    container_name: trafman_app
-    image: trafman
+  trafmon:
+    container_name: trafmon_app
+    image: trafmon
     restart: always
     depends_on:
       - postgres
@@ -25,7 +25,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=trafman_database
+      - POSTGRES_DB=trafmon_database
     volumes:
       # - ./postgres-data:/var/lib/postgresql/data
       - ./database/backups:/home/backups

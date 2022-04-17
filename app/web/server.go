@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"xarantolus/trafman/config"
-	"xarantolus/trafman/store"
+	"github.com/xarantolus/trafmon/app/config"
+	"github.com/xarantolus/trafmon/app/store"
 )
 
 type Server struct {

@@ -8,10 +8,10 @@ import (
 
 	"github.com/google/go-github/v43/github"
 	_ "github.com/lib/pq"
+	"github.com/xarantolus/trafmon/app/config"
+	"github.com/xarantolus/trafmon/app/store"
+	"github.com/xarantolus/trafmon/app/web"
 	"golang.org/x/oauth2"
-	"xarantolus/trafman/config"
-	"xarantolus/trafman/store"
-	"xarantolus/trafman/web"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module xarantolus/trafman
+module github.com/xarantolus/trafmon/app
 
 go 1.18
 

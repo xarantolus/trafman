@@ -8,7 +8,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=trafman_database
+      - POSTGRES_DB=trafmon_database
     volumes:
       # - ./postgres-data:/var/lib/postgresql/data
       - ./database/backups:/home/backups
@@ -25,6 +25,6 @@ services:
     links:
       - postgres:postgres
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/trafman_database?sslmode=disable
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/trafmon_database?sslmode=disable
     depends_on:
       - postgres

@@ -19,7 +19,7 @@ func main() {
 	// Set one up @ https://github.com/settings/tokens/new
 	cfg, err := config.FromEnvironment()
 	if err != nil {
-		log.Fatalf("getting config from environment: %s\n", err.Error())
+		log.Fatalf("[Startup] Getting config from environment: %s\n", err.Error())
 	}
 
 	ctx := context.Background()
@@ -32,7 +32,7 @@ func main() {
 	psqlInfo := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.DBName)
 	database, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Fatalf("connecting to database: %s", err)
+		log.Fatalf("[Startup] Creating database connection: %s", err)
 	}
 
 	var tries = 1
@@ -59,13 +59,13 @@ func main() {
 	} else {
 		err = manager.StartBackgroundTasks()
 		if err != nil {
-			log.Fatalf("starting background tasks: %s\n", err.Error())
+			log.Fatalf("[Startup] Starting background tasks: %s\n", err.Error())
 		}
 	}
 
 	defer panic("web server should never stop, but did")
 	err = (&web.Server{Manager: manager}).Run(cfg)
 	if err != nil {
-		log.Fatalf("running web server: %s\n", err.Error())
+		log.Fatalf("[Startup] Running web server: %s\n", err.Error())
 	}
 }

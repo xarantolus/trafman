@@ -18,7 +18,7 @@ func (m *Manager) StartBackgroundTasks() (err error) {
 
 func (m *Manager) runBackgroundTasks() {
 	for {
-		log.Printf("Running background tasks")
+		log.Printf("[Background] Start running background tasks")
 
 		err := m.runReposUpdate()
 		if err != nil {
@@ -31,7 +31,7 @@ func (m *Manager) runBackgroundTasks() {
 			panic("invalid nextTime when running background tasks: got " + nextTime.String())
 		}
 
-		log.Printf("Running next background tasks on %s", nextTime.String())
+		log.Printf("[Background] Running next background tasks on %s", nextTime.String())
 		time.Sleep(waitDur)
 	}
 }
@@ -66,7 +66,7 @@ func (m *Manager) runReposUpdate() (err error) {
 		}
 	}
 
-	log.Printf("Finished working on %d repos", len(repos))
+	log.Printf("[Background] Finished working on %d repos", len(repos))
 
 	return
 }
@@ -75,7 +75,7 @@ func (m *Manager) fetchAllRepos(ctx context.Context) (repos []*github.Repository
 	var repoPage = 1
 
 	for {
-		log.Printf("Fetching page %d of repositories", repoPage)
+		log.Printf("[Background] Fetching page %d of repositories", repoPage)
 
 		// Get Repos for the currently logged in user
 		fetched, resp, err := m.GitHub.Repositories.List(ctx, "", &github.RepositoryListOptions{
@@ -92,7 +92,7 @@ func (m *Manager) fetchAllRepos(ctx context.Context) (repos []*github.Repository
 		}
 
 		repos = append(repos, fetched...)
-		log.Printf("Got %d repos, now have %d", len(fetched), len(repos))
+		log.Printf("[Background] Got %d repos, now have %d", len(fetched), len(repos))
 
 		repoPage = resp.NextPage
 		if repoPage == 0 {

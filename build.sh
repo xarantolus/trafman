@@ -7,6 +7,9 @@ echo "Using $COMPOSE_FILE for building"
 
 echo "Building frontend"
 cd frontend
+if [ ! -d "node_modules" ]; then
+    npm install
+fi
 npm run build
 
 echo "Copying frontend to app"

@@ -2,7 +2,9 @@
     <div>
         <div v-if="loading">Loading...</div>
         <div v-else-if="error">{{ error }}</div>
-        <repository-card v-else v-for="item in repos" v-bind:key="item.id" :repo="item" />
+        <div v-else class="card-container">
+            <repository-card v-for="item in repos" v-bind:key="item.id" :repo="item" class="card" />
+        </div>
     </div>
 </template>
 
@@ -52,3 +54,13 @@ export default defineComponent({
     }
 });
 </script>
+
+<style>
+.card-container {
+    max-width: 1024px;
+    margin: 0 auto;
+}
+.card {
+    margin-bottom: 1%;
+}
+</style>

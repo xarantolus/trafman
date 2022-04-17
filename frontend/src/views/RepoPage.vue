@@ -2,7 +2,7 @@
     <div>
         <div v-if="loading">Loading...</div>
         <div v-else-if="error">{{ error }}</div>
-        <repository-card :repo="stats!.repository" />
+        <repository-card v-else :repo="stats!.repository" />
     </div>
 </template>
 
@@ -28,6 +28,7 @@ export default defineComponent({
         this.$watch(
             () => this.$route.params,
             (toParams: any) => {
+                if (!toParams.username) return;
                 this.fetchRepoStats(toParams.username, toParams.reponame)
             },
             // fetch the data when the view is created and the data is

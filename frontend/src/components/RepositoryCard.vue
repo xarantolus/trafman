@@ -41,7 +41,6 @@ export default defineComponent({
 .repo-box {
     background: var(--card-color);
     border: 3px solid var(--border-color);
-    margin-bottom: 2%;
 }
 
 .stars {

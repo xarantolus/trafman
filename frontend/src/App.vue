@@ -1,6 +1,5 @@
 <template>
   <nav class="navbar">
-    <!-- TODO: Improve this for mobile, add icon etc. -->
     <div class="navbar-brand">
       <router-link to="/" class="navbar-item">
         <img class="logo-image invert-dm" src="/img/icons/safari-pinned-tab.svg" alt="Repositories">
@@ -69,7 +68,21 @@ export default defineComponent({
   }
 
   .invert-dm {
-    filter: invert()
+    filter: invert(1) !important;
+  }
+
+
+  /* Some style fixes for bulma */
+  .navbar-link.is-active,
+  .navbar-link:focus,
+  .navbar-link:focus-within,
+  .navbar-link:hover,
+  a.navbar-item.is-active,
+  a.navbar-item:focus,
+  a.navbar-item:focus-within,
+  a.navbar-item:hover {
+    background-color: var(--button-color);
+    color: var(--green);
   }
 }
 

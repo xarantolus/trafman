@@ -21,8 +21,7 @@ export default defineComponent({
             <span v-if="repo.stars > 0" class="card-header-icon stars">⭐{{ repo.stars }}</span>
             <span v-if="repo.is_fork" class="card-header-icon fork">🍴</span>
             <h4 class="title is-4">
-                <!-- TODO: Add router link to some kind of overview page for a repository -->
-                <a class="repocard-link" :href="'https://github.com/' + repo.username + '/' + repo.name">{{ repo.username }}/{{ repo.name }}</a>
+                <router-link class="repocard-link" :to="{ name: 'repo', params: { username: repo.username, reponame: repo.name } }">{{ repo.username }}/{{ repo.name }}</router-link>
             </h4>
             <p v-if="repo.description.trim()" class="content">{{repo.description}}</p>
         </div>

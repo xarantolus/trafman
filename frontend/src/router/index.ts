@@ -1,4 +1,5 @@
 import RepoListing from '@/views/RepoListing.vue'
+import RepoPage from '@/views/RepoPage.vue'
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 
@@ -12,6 +13,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/",
     name: 'repos',
     component: RepoListing
+  },
+  {
+    path: "/repo/:username/:reponame",
+    name: "repo",
+    component: RepoPage
   },
   {
     path: '/about',

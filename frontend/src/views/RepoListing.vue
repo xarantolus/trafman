@@ -2,17 +2,19 @@
     <div>
         <div v-if="loading">Loading...</div>
         <div v-else-if="error">{{ error }}</div>
-        <div v-else v-for="item in repos" v-bind:key="item.id">{{ item.username }}/{{ item.name }}</div>
+        <repository-card v-else v-for="item in repos" v-bind:key="item.id" :repo="item" />
     </div>
 </template>
 
 <script lang="ts">
 import { RepositoryInfo } from '@/model/Repository';
+import RepositoryCard from '@/components/RepositoryCard.vue';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-    name: 'RepoListing',
+    name: 'repo-listing',
     components: {
+        RepositoryCard,
     },
     data() {
         return {

@@ -8,12 +8,12 @@ create table Repositories (
 
 create table RepoStats (
     repo_id int not null REFERENCES Repositories,
-    date date not null default CURRENT_DATE,
+    date_time timestamp not null default CURRENT_TIMESTAMP,
     stars int not null,
     forks int not null,
     size int not null,
     watchers int not null,
-    primary key (repo_id, date)
+    primary key (repo_id, date_time)
 );
 
 create table RepoTrafficViews (
@@ -34,31 +34,28 @@ create table RepoTrafficClones (
 
 create table RepoTrafficPaths (
     repo_id int not null REFERENCES Repositories,
-    date date not null default CURRENT_DATE,
+    date_time timestamp not null default CURRENT_TIMESTAMP,
     path text not null,
     title text not null,
     count int not null,
     uniques int not null,
-    primary key (repo_id, date, path)
+    primary key (repo_id, date_time, path)
 );
 
 create table RepoTrafficReferrers (
     repo_id int not null REFERENCES Repositories,
-    date date not null default CURRENT_DATE,
+    date_time timestamp not null default CURRENT_TIMESTAMP,
     referrer text not null,
     count int not null,
     uniques int not null,
-    primary key (repo_id, date, referrer)
+    primary key (repo_id, date_time, referrer)
 );
-
 
 create table Releases (
     repo_id int not null REFERENCES Repositories,
-
     id int primary key not null,
     tag_name text not null,
-    created date not null default CURRENT_DATE,
-
+    created timestamp not null default CURRENT_TIMESTAMP,
     name text not null,
     body text not null
 );
@@ -67,9 +64,7 @@ create table ReleaseAssets (
     id int not null,
     release_id int not null REFERENCES Releases,
     primary key (id, release_id),
-
-    date date not null default CURRENT_DATE,
-
+    date_time timestamp not null default CURRENT_TIMESTAMP,
     filename text not null,
     download_count int not null,
     updated_at date not null,

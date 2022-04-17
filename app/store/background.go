@@ -133,6 +133,7 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 	)
 	log.Printf("[Background] Working on %s/%s", repoUser, repoName)
 
+	// Insert or update repository info on every run (e.g. if a repo was renamed or the description changed)
 	_, err = m.Database.Exec(`insert into Repositories(id, username, name, description, is_fork) values ($1, $2, $3, $4, $5)
 			on conflict (id) do update set username=EXCLUDED.username, name=EXCLUDED.name, description=EXCLUDED.description, is_fork=EXCLUDED.is_fork`,
 		repo.ID, repoUser, repoName, repo.GetDescription(), repo.GetFork())
@@ -140,10 +141,11 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		return fmt.Errorf("inserting basic repo: %s", err.Error())
 	}
 
-	_, err = m.Database.Exec(`insert into RepoStats(repo_id, stars, forks, size, watchers)
-								 values ($1, $2, $3, $4, $5)
-  							on conflict (repo_id, date) do update set stars=EXCLUDED.stars, forks=EXCLUDED.forks, size=EXCLUDED.size, watchers=EXCLUDED.watchers`,
-		repo.ID, repo.GetStargazersCount(), repo.GetForksCount(), repo.GetSize(), repo.GetWatchersCount())
+	// Then keep a log of all repo stats
+	_, err = m.Database.Exec(`insert into RepoStats(repo_id, stars, forks, size, watchers, date_time)
+								 values ($1, $2, $3, $4, $5, $6)
+  							on conflict (repo_id, date_time) do update set stars=EXCLUDED.stars, forks=EXCLUDED.forks, size=EXCLUDED.size, watchers=EXCLUDED.watchers, date_time=EXCLUDED.date_time`,
+		repo.ID, repo.GetStargazersCount(), repo.GetForksCount(), repo.GetSize(), repo.GetWatchersCount(), time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("inserting basic repo info: %s", err.Error())
 	}
@@ -158,7 +160,7 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		_, err = m.Database.Exec(`insert into RepoTrafficViews(repo_id, date, count, uniques)
 								 values ($1, $2, $3, $4)
   							on conflict (repo_id, date) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
-			repo.ID, day.GetTimestamp().Time, day.GetCount(), day.GetUniques(),
+			repo.ID, day.GetTimestamp().Time.UTC(), day.GetCount(), day.GetUniques(),
 		)
 		if err != nil {
 			return fmt.Errorf("inserting traffic view data: %s", err.Error())
@@ -170,10 +172,10 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		return fmt.Errorf("fetching traffic paths: %s", err.Error())
 	}
 	for _, path := range paths {
-		_, err = m.Database.Exec(`insert into RepoTrafficPaths(repo_id, path, title, count, uniques)
-								 values ($1, $2, $3, $4, $5)
-  							on conflict (repo_id, date, path) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
-			repo.ID, path.GetPath(), path.GetTitle(), path.GetCount(), path.GetUniques(),
+		_, err = m.Database.Exec(`insert into RepoTrafficPaths(repo_id, path, title, count, uniques, date_time)
+								 values ($1, $2, $3, $4, $5, $6)
+  							on conflict (repo_id, date_time, path) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques, date_time=EXCLUDED.date_time`,
+			repo.ID, path.GetPath(), path.GetTitle(), path.GetCount(), path.GetUniques(), time.Now().UTC(),
 		)
 		if err != nil {
 			return fmt.Errorf("inserting traffic path data: %s", err.Error())
@@ -185,10 +187,10 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		return fmt.Errorf("fetching traffic referrers: %s", err.Error())
 	}
 	for _, ref := range refs {
-		_, err = m.Database.Exec(`insert into RepoTrafficReferrers(repo_id, referrer, count, uniques)
-								 values ($1, $2, $3, $4)
-  							on conflict (repo_id, date, referrer) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
-			repo.ID, ref.GetReferrer(), ref.GetCount(), ref.GetUniques(),
+		_, err = m.Database.Exec(`insert into RepoTrafficReferrers(repo_id, referrer, count, uniques, date_time)
+								 values ($1, $2, $3, $4, $5)
+  							on conflict (repo_id, date_time, referrer) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
+			repo.ID, ref.GetReferrer(), ref.GetCount(), ref.GetUniques(), time.Now().UTC(),
 		)
 		if err != nil {
 			return fmt.Errorf("inserting traffic referrer data: %s", err.Error())
@@ -205,7 +207,7 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		_, err = m.Database.Exec(`insert into RepoTrafficClones(repo_id, date, count, uniques)
 								 values ($1, $2, $3, $4)
   							on conflict (repo_id, date) do update set count=EXCLUDED.count, uniques=EXCLUDED.uniques`,
-			repo.ID, clone.GetTimestamp().Time, clone.GetCount(), clone.GetUniques(),
+			repo.ID, clone.GetTimestamp().Time.UTC(), clone.GetCount(), clone.GetUniques(),
 		)
 		if err != nil {
 			return fmt.Errorf("inserting traffic referrer data: %s", err.Error())
@@ -221,17 +223,17 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		_, err = m.Database.Exec(`insert into Releases(id, repo_id, tag_name, created, name, body)
 								 values ($1, $2, $3, $4, $5, $6)
 			on conflict (id) do update set repo_id=EXCLUDED.repo_id, tag_name=EXCLUDED.tag_name, created=EXCLUDED.created, name=EXCLUDED.name, body=EXCLUDED.body`,
-			release.ID, repo.ID, release.GetTagName(), release.GetCreatedAt().Time, release.GetName(), release.GetBody(),
+			release.ID, repo.ID, release.GetTagName(), release.GetCreatedAt().Time.UTC(), release.GetName(), release.GetBody(),
 		)
 		if err != nil {
 			return fmt.Errorf("inserting basic release data: %s", err.Error())
 		}
 
 		for _, asset := range release.Assets {
-			_, err = m.Database.Exec(`insert into ReleaseAssets(id, release_id, filename, download_count, updated_at, size)
-								 values ($1, $2, $3, $4, $5, $6)
-			on conflict (id, release_id) do update set filename=EXCLUDED.filename, download_count=EXCLUDED.download_count, updated_at=EXCLUDED.updated_at, size=EXCLUDED.size`,
-				asset.ID, release.ID, asset.GetName(), asset.GetDownloadCount(), asset.GetUpdatedAt().Time, asset.GetSize(),
+			_, err = m.Database.Exec(`insert into ReleaseAssets(id, release_id, filename, download_count, updated_at, size, date_time)
+								 values ($1, $2, $3, $4, $5, $6, $7)
+			on conflict (id, release_id) do update set filename=EXCLUDED.filename, download_count=EXCLUDED.download_count, updated_at=EXCLUDED.updated_at, size=EXCLUDED.size, date_time=EXCLUDED.date_time`,
+				asset.ID, release.ID, asset.GetName(), asset.GetDownloadCount(), asset.GetUpdatedAt().Time, asset.GetSize(), time.Now().UTC(),
 			)
 			if err != nil {
 				return fmt.Errorf("inserting release asset data: %s", err.Error())

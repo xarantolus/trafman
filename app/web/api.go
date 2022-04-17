@@ -24,13 +24,13 @@ func (s *Server) handleReposAPI(w http.ResponseWriter, r *http.Request) (err err
 
 	rows, err := s.Manager.Database.Query(`
 	WITH repos AS (
-		SELECT DISTINCT ON (r.id) r.id, r.username, r.name, r.description, r.is_fork, s.stars, s.forks, s.size, s.date, coalesce(sum(ra.download_count), 0) as download_count
+		SELECT DISTINCT ON (r.id) r.id, r.username, r.name, r.description, r.is_fork, s.stars, s.forks, s.size, s.date_time, coalesce(sum(ra.download_count), 0) as download_count
 			FROM Repositories r
 			join RepoStats s on r.id = s.repo_id
 			left join releases rs on r.id = rs.repo_id
 			left join releaseassets ra on rs.id = ra.release_id
-		group by r.id, r.username, r.name, r.description, r.is_fork, s.stars, s.forks, s.size, s.date
-		ORDER BY r.id, s.date DESC
+		group by r.id, r.username, r.name, r.description, r.is_fork, s.stars, s.forks, s.size, s.date_time
+		ORDER BY r.id, s.date_time DESC
 	)
 	SELECT * FROM repos r
 	ORDER BY (r.download_count+r.stars+r.forks) DESC`)

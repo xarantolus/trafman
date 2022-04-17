@@ -11,6 +11,7 @@ type Config struct {
 	GitHubToken             string
 	AppPort                 string
 	DisableBackgroundChecks bool
+	Debug                   bool
 	DB                      DB
 }
 
@@ -31,6 +32,20 @@ func getOrDefault(key, def string) string {
 	return val
 }
 
+func getBoolean(key string, def bool) (bool, error) {
+	env := os.Getenv(key)
+	if strings.TrimSpace(env) == "" {
+		return def, nil
+	}
+
+	envVal, err := strconv.ParseBool(env)
+	if err != nil {
+		return false, fmt.Errorf("parsing %s environment variable: %s", key, err.Error())
+	}
+
+	return envVal, nil
+}
+
 func FromEnvironment() (cfg Config, err error) {
 	var ghToken = os.Getenv("GITHUB_TOKEN")
 	if strings.TrimSpace(ghToken) == "" {
@@ -38,9 +53,12 @@ func FromEnvironment() (cfg Config, err error) {
 		return
 	}
 
-	disableBGChecks, err := strconv.ParseBool(getOrDefault("APP_DISABLE_BACKGROUND_CHECKS", "false"))
+	disableBGChecks, err := getBoolean("APP_DISABLE_BACKGROUND_CHECKS", false)
 	if err != nil {
-		err = fmt.Errorf("parsing APP_DISABLE_BACKGROUND_CHECKS environment variable: %s", err.Error())
+		return
+	}
+	enableDebugMode, err := getBoolean("APP_DEBUG", false)
+	if err != nil {
 		return
 	}
 
@@ -53,6 +71,7 @@ func FromEnvironment() (cfg Config, err error) {
 			DBName:   getOrDefault("DB_NAME", "trafmon_database"),
 		},
 
+		Debug:                   enableDebugMode,
 		DisableBackgroundChecks: disableBGChecks,
 		AppPort:                 getOrDefault("APP_PORT", "9319"),
 		GitHubToken:             ghToken,

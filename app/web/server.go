@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -30,7 +31,11 @@ func (s *Server) Run(cfg config.Config) (err error) {
 	// Get the correct frontend path and serve it from every route
 	subFS, err := fs.Sub(s.Frontend, "frontend")
 	if err != nil {
-		return fmt.Errorf("setting up frontend FS: %w", err)
+		return fmt.Errorf("setting up frontend embed FS: %w", err)
+	}
+	if cfg.Debug {
+		log.Printf("[Server] Using normal filesystem because we're in debug mode")
+		subFS = os.DirFS("../frontend/dist")
 	}
 
 	s.router.PathPrefix("/").HandlerFunc(wrapError(indexHandler(subFS)))

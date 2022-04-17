@@ -4,11 +4,10 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build",
+            "label": "Run database in docker",
             "isBackground": true,
             "type": "shell",
             "command": "./build.sh docker-compose.debug.yml",
-
             // Run in background: https://stackoverflow.com/a/54017304
             "problemMatcher": [
                 {
@@ -26,7 +25,19 @@
                         "endsPattern": ".",
                     }
                 }
-            ]
+            ],
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+        },
+        {
+            "label": "Watch frontend changes & build",
+            "type": "shell",
+            "command": "cd frontend && npm run watch",
+            "isBackground": true,
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
         }
     ]
 }

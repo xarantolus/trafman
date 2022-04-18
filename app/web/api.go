@@ -5,9 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/xarantolus/trafmon/app/web/query"
-
 	"github.com/gorilla/mux"
+	"github.com/xarantolus/trafmon/app/web/query"
 )
 
 func (s *Server) handleReposAPI(w http.ResponseWriter, r *http.Request) (err error) {
@@ -34,8 +33,14 @@ func (s *Server) handleRepoStatsAPI(w http.ResponseWriter, r *http.Request) (err
 		return
 	}
 
+	viewsChart, err := query.ViewsChart(s.Manager.Database, repo.ID)
+	if err != nil {
+		return
+	}
+
 	return serveJSON(w, r, map[string]any{
 		"repository": repo,
 		"clones":     clonesChart,
+		"views":      viewsChart,
 	})
 }

@@ -33,7 +33,7 @@ export default defineComponent({
                 maintainAspectRatio: false,
                 plugins: {
                     title: {
-                        text: 'Clones over time',
+                        text: this.$props.chartTitle,
                         display: true
                     },
                     tooltip: {

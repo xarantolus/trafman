@@ -6,6 +6,7 @@
             <repository-card :repo="stats!.repository" />
             <div class="columns is-2">
                 <simple-date-chart class="column" chart-title="Clones over time" :data="stats!.clones" />
+                <simple-date-chart class="column" chart-title="Visitors over time" :data="stats!.views" />
             </div>
         </div>
     </div>

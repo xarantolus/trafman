@@ -3,7 +3,7 @@
         <div v-if="loading">Loading...</div>
         <div v-else-if="error">{{ error }}</div>
         <div v-else>
-            <repository-card :repo="stats!.repository" />
+            <repository-card class="restrict-width" :external_link="true" :repo="stats!.repository" />
             <div class="columns is-multiline">
                 <simple-date-chart class="column is-half" chart-title="Clones" :data="stats!.clones" />
                 <simple-date-chart class="column is-half" chart-title="Visitors" :data="stats!.views" />
@@ -62,3 +62,10 @@ export default defineComponent({
     }
 });
 </script>
+
+<style>
+.restrict-width {
+    max-width: 800px;
+    margin: 0 auto !important;
+}
+</style>

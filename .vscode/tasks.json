@@ -31,9 +31,9 @@
             },
         },
         {
-            "label": "Watch frontend changes & build",
+            "label": "Serve frontend",
             "type": "shell",
-            "command": "cd frontend && npm run watch",
+            "command": "cd frontend && npm run serve",
             "isBackground": true,
             "runOptions": {
                 "runOn": "folderOpen"

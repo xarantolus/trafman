@@ -8,6 +8,9 @@ export default defineComponent({
         repo: {
             type: Object as PropType<RepositoryInfo>,
             required: true
+        },
+        external_link: {
+            type: Boolean,
         }
     },
     components: {},
@@ -16,14 +19,16 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="card repo-box">
+    <div class="card repo-box m-2">
         <div class="card-content">
             <span v-if="repo.stars > 0" class="card-header-icon stars">⭐{{ repo.stars }}</span>
             <span v-if="repo.is_fork" class="card-header-icon fork">🍴</span>
+            <span v-if="external_link" class="card-header-icon external-link">⇗</span>
             <h4 class="title is-4">
-                <router-link class="repocard-link" :to="{ name: 'repo', params: { username: repo.username, reponame: repo.name } }">{{ repo.username }}/{{ repo.name }}</router-link>
+                <a v-if="external_link" class="repocard-link" target="_blank" :href="'https://github.com/' + repo.username + '/' + repo.name">{{ repo.username }}/{{ repo.name }}</a>
+                <router-link v-else class="repocard-link" :to="{ name: 'repo', params: { username: repo.username, reponame: repo.name } }">{{ repo.username }}/{{ repo.name }}</router-link>
             </h4>
-            <p v-if="repo.description.trim()" class="content">{{repo.description}}</p>
+            <p v-if="repo.description.trim()" class="content">{{ repo.description }}</p>
         </div>
     </div>
 </template>
@@ -55,5 +60,13 @@ export default defineComponent({
     bottom: 0;
     right: 0;
     user-select: none;
+}
+
+.external-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    user-select: none;
+
 }
 </style>

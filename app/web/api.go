@@ -86,19 +86,19 @@ func (s *Server) handleRepoStatsAPI(w http.ResponseWriter, r *http.Request) (err
 
 	type dataset struct {
 		Label           string `json:"label"`
-		BackgroundColor string `json:"background_color"`
-		BorderColor     string `json:"border_color"`
+		BackgroundColor string `json:"backgroundColor"`
+		BorderColor     string `json:"borderColor"`
 		Fill            bool   `json:"fill"`
 		Data            []any  `json:"data"`
 	}
 
 	type timeSeriesChart struct {
-		Labels   []time.Time `json:"labels"`
-		Datasets []dataset   `json:"datasets"`
+		Labels   []dateOnly `json:"labels"`
+		Datasets []dataset  `json:"datasets"`
 	}
 
 	var (
-		chartLabelDates []time.Time
+		chartLabelDates []dateOnly
 		cloneCounts     []any
 		cloneUniques    []any
 	)
@@ -122,7 +122,7 @@ func (s *Server) handleRepoStatsAPI(w http.ResponseWriter, r *http.Request) (err
 			return
 		}
 
-		chartLabelDates = append(chartLabelDates, date)
+		chartLabelDates = append(chartLabelDates, dateOnly(date))
 		cloneCounts = append(cloneCounts, count)
 		cloneUniques = append(cloneUniques, uniques)
 	}
@@ -137,14 +137,22 @@ func (s *Server) handleRepoStatsAPI(w http.ResponseWriter, r *http.Request) (err
 				{
 					Label:           "Clones",
 					BackgroundColor: "#1F6FEB",
+					BorderColor:     "#1F6FEB",
 					Data:            cloneCounts,
 				},
 				{
 					Label:           "Unique",
 					BackgroundColor: "#238636",
+					BorderColor:     "#238636",
 					Data:            cloneUniques,
 				},
 			},
 		},
 	})
+}
+
+type dateOnly time.Time
+
+func (d dateOnly) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + time.Time(d).Format("2006-01-02") + "\""), nil
 }

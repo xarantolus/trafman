@@ -2,12 +2,18 @@
     <div>
         <div v-if="loading">Loading...</div>
         <div v-else-if="error">{{ error }}</div>
-        <repository-card v-else :repo="stats!.repository" />
+        <div v-else>
+            <repository-card :repo="stats!.repository" />
+            <div class="columns is-2">
+                <simple-date-chart class="column" chart-title="Clones over time" :data="stats!.clones" />
+            </div>
+        </div>
     </div>
 </template>
 
 <script lang="ts">
 import RepositoryCard from '@/components/RepositoryCard.vue';
+import SimpleDateChart from '@/components/SimpleDateChart.vue';
 import { defineComponent } from 'vue';
 import { RepoStats } from '@/model/RepoStats';
 
@@ -15,12 +21,13 @@ export default defineComponent({
     name: 'repo-page',
     components: {
         RepositoryCard,
+        SimpleDateChart,
     },
     data() {
         return {
             loading: true,
             stats: null as RepoStats | null,
-            error: null as string | null,
+            error: null as string | null
         }
     },
     created() {

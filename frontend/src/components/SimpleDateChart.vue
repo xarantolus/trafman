@@ -73,6 +73,7 @@ export default defineComponent({
                 },
                 scales: {
                     x: {
+                        beginAtZero: true,
                         grid: {
                             color: gridColor
                         },
@@ -88,10 +89,11 @@ export default defineComponent({
                             color: labelColor
                         },
                         ticks: {
-                            color: ticksColor
+                            color: ticksColor,
                         }
                     },
                     y: {
+                        beginAtZero: true,
                         grid: {
                             color: gridColor
                         },

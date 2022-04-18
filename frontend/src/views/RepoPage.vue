@@ -4,9 +4,10 @@
         <div v-else-if="error">{{ error }}</div>
         <div v-else>
             <repository-card :repo="stats!.repository" />
-            <div class="columns is-2 is-multiline">
-                <simple-date-chart class="column" chart-title="Clones over time" :data="stats!.clones" />
-                <simple-date-chart class="column" chart-title="Visitors over time" :data="stats!.views" />
+            <div class="columns is-multiline">
+                <simple-date-chart class="column is-half" chart-title="Clones" :data="stats!.clones" />
+                <simple-date-chart class="column is-half" chart-title="Visitors" :data="stats!.views" />
+                <simple-date-chart class="column is-half" chart-title="Statistics" :data="stats!.stats" />
             </div>
         </div>
     </div>

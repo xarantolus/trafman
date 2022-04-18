@@ -38,9 +38,15 @@ func (s *Server) handleRepoStatsAPI(w http.ResponseWriter, r *http.Request) (err
 		return
 	}
 
+	statsChart, err := query.RepoStatsChart(s.Manager.Database, repo.ID)
+	if err != nil {
+		return
+	}
+
 	return serveJSON(w, r, map[string]any{
 		"repository": repo,
 		"clones":     clonesChart,
 		"views":      viewsChart,
+		"stats":      statsChart,
 	})
 }

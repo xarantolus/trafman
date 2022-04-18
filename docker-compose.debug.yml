@@ -19,7 +19,7 @@ services:
     container_name: pgweb
     image: sosedoff/pgweb
     ports:
-      - "8081:8081"
+      - "8001:8081"
     links:
       - postgres:postgres
     environment:

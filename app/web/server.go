@@ -58,6 +58,9 @@ func indexHandler(subFS fs.FS) handler {
 			fileServer.ServeHTTP(w, r)
 			return nil
 		}
+		if strings.HasSuffix(r.URL.Path, ".js") {
+			w.Header().Set("Content-Type", "application/javascript")
+		}
 		fileServer.ServeHTTP(w, r)
 		return nil
 	}

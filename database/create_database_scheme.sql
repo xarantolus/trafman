@@ -67,6 +67,6 @@ create table ReleaseAssets (
     date_time timestamp not null default CURRENT_TIMESTAMP,
     filename text not null,
     download_count int not null,
-    updated_at date not null,
+    updated_at timestamp not null default CURRENT_TIMESTAMP,
     size int not null
 );

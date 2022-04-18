@@ -84,9 +84,67 @@ func (s *Server) handleRepoStatsAPI(w http.ResponseWriter, r *http.Request) (err
 		return err
 	}
 
+	type dataset struct {
+		Label           string `json:"label"`
+		BackgroundColor string `json:"background_color"`
+		BorderColor     string `json:"border_color"`
+		Fill            bool   `json:"fill"`
+		Data            []any  `json:"data"`
+	}
+
+	type timeSeriesChart struct {
+		Labels   []time.Time `json:"labels"`
+		Datasets []dataset   `json:"datasets"`
+	}
+
+	var (
+		chartLabelDates []time.Time
+		cloneCounts     []any
+		cloneUniques    []any
+	)
+
+	cloneRows, err := s.Manager.Database.Query(`select date, count, uniques
+												from repotrafficclones
+												where repo_id=$1
+												ORDER BY date asc`, repoInfo.ID)
+	if err != nil {
+		return
+	}
+	defer cloneRows.Close()
+
+	for cloneRows.Next() {
+		var (
+			date           time.Time
+			count, uniques int
+		)
+		err = cloneRows.Scan(&date, &count, &uniques)
+		if err != nil {
+			return
+		}
+
+		chartLabelDates = append(chartLabelDates, date)
+		cloneCounts = append(cloneCounts, count)
+		cloneUniques = append(cloneUniques, uniques)
+	}
+
 	// TODO: Generate all chart data and also serve it
 
 	return serveJSON(w, r, map[string]any{
 		"repository": repoInfo,
+		"clones": timeSeriesChart{
+			Labels: chartLabelDates,
+			Datasets: []dataset{
+				{
+					Label:           "Clones",
+					BackgroundColor: "#1F6FEB",
+					Data:            cloneCounts,
+				},
+				{
+					Label:           "Unique",
+					BackgroundColor: "#238636",
+					Data:            cloneUniques,
+				},
+			},
+		},
 	})
 }

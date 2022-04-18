@@ -86,9 +86,14 @@ export default defineComponent({
   }
 }
 
-html,
+html {
+  overflow: hidden;
+  height: 100%;
+}
+
 body {
-  height: 100vh;
+  height: 100%;
+  overflow: auto;
 }
 
 .navbar {
@@ -120,5 +125,10 @@ nav a {
 
 nav a.router-link-exact-active {
   color: var(--green);
+}
+
+.columns {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 </style>

@@ -8,6 +8,7 @@ import 'chartjs-adapter-luxon';
 import { DateTime } from 'luxon';
 import 'chart.js/auto';
 import { defineComponent } from 'vue';
+import { isDarkMode } from '@/mixins/dark_mode';
 
 export default defineComponent({
     name: 'simple-date-chart',
@@ -27,14 +28,21 @@ export default defineComponent({
     data() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let vueRef = this;
+
         const dayFormat = 'DD T';
+        const gridColor = isDarkMode() ? "#aaa" : "#333";
+        const titleColor = isDarkMode() ? "#fff" : "#333";
+        const ticksColor = isDarkMode() ? "#ddd" : "#333";
+        const labelColor = isDarkMode() ? "#eee" : "#222";
+
         return {
             chartOptions: {
                 maintainAspectRatio: false,
                 plugins: {
                     title: {
                         text: this.$props.chartTitle,
-                        display: true
+                        display: true,
+                        color: titleColor
                     },
                     tooltip: {
                         callbacks: {
@@ -44,7 +52,12 @@ export default defineComponent({
                                 return DateTime.fromISO(data).toLocaleString({ month: 'long', day: 'numeric' });
                             }
                         }
-                    }
+                    },
+                    legend: {
+                        labels: {
+                            color: labelColor
+                        }
+                    },
                 },
                 interaction: {
                     intersect: false,
@@ -60,9 +73,11 @@ export default defineComponent({
                 },
                 scales: {
                     x: {
+                        grid: {
+                            color: gridColor
+                        },
                         type: 'time',
                         time: {
-                            // Luxon format string
                             tooltipFormat: dayFormat,
                             unit: 'day'
                         },
@@ -70,12 +85,23 @@ export default defineComponent({
                         title: {
                             display: true,
                             text: 'Date',
+                            color: labelColor
+                        },
+                        ticks: {
+                            color: ticksColor
                         }
                     },
                     y: {
+                        grid: {
+                            color: gridColor
+                        },
                         title: {
                             display: true,
-                            text: 'Count'
+                            text: 'Count',
+                            color: titleColor
+                        },
+                        ticks: {
+                            color: ticksColor
                         }
                     }
                 },

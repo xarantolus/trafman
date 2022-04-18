@@ -4,3 +4,4 @@ trafmon
 .env
 dist
 app/frontend
+postgres-data

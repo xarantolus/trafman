@@ -9,8 +9,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=trafmon_database
     volumes:
-      # - ./postgres-data:/var/lib/postgresql/data
-      - ./database/backups:/home/backups
+      - ./postgres-data:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "5432:5432"
@@ -18,6 +17,7 @@ services:
   pgweb:
     container_name: pgweb
     image: sosedoff/pgweb
+    restart: unless-stopped
     ports:
       - "8001:8081"
     links:

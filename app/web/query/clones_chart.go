@@ -7,9 +7,9 @@ import (
 
 func ClonesChart(db *sql.DB, repoID int) (c TimeSeriesChart, err error) {
 	var (
-		chartLabelDates []Date
-		cloneCounts     []any
-		cloneUniques    []any
+		chartLabelDates = []Date{}
+		cloneCounts     = []any{}
+		cloneUniques    = []any{}
 	)
 
 	cloneRows, err := db.Query(`select date, count, uniques

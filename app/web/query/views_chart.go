@@ -7,9 +7,9 @@ import (
 
 func ViewsChart(db *sql.DB, repoID int) (c TimeSeriesChart, err error) {
 	var (
-		chartLabelDates []Date
-		viewCounts      []any
-		uniqueCounts    []any
+		chartLabelDates = []Date{}
+		viewCounts      = []any{}
+		uniqueCounts    = []any{}
 	)
 
 	viewRows, err := db.Query(`select date, count, uniques

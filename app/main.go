@@ -32,6 +32,8 @@ func main() {
 	))
 	ghClient := github.NewClient(token)
 
+	// store.FetchHistoricalStats(ctx, ghClient, "xarantolus", "filtrite")
+
 	// Connect to database
 	psqlInfo := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.DBName)
 	database, err := sql.Open("postgres", psqlInfo)

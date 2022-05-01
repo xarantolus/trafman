@@ -103,29 +103,6 @@ func (m *Manager) fetchAllRepos(ctx context.Context) (repos []*github.Repository
 	return
 }
 
-func (m *Manager) fetchAllReleases(ctx context.Context, repo *github.Repository) (releases []*github.RepositoryRelease, err error) {
-	var page = 1
-
-	for {
-		fetched, resp, err := m.GitHub.Repositories.ListReleases(ctx, getOwnerName(repo), repo.GetName(), &github.ListOptions{
-			Page:    page,
-			PerPage: 100,
-		})
-		if err != nil || len(fetched) == 0 {
-			return releases, err
-		}
-
-		releases = append(releases, fetched...)
-
-		page = resp.NextPage
-		if page == 0 {
-			break
-		}
-	}
-
-	return
-}
-
 func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err error) {
 	var (
 		repoUser = getOwnerName(repo)
@@ -214,7 +191,9 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 		}
 	}
 
-	releases, err := m.fetchAllReleases(ctx, repo)
+	releases, err := fetchAllPages(func(opts github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
+		return m.GitHub.Repositories.ListReleases(ctx, getOwnerName(repo), repo.GetName(), &opts)
+	}, 100)
 	if err != nil {
 		return fmt.Errorf("fetching releases: %s", err.Error())
 	}

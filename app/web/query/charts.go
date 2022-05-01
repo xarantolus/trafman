@@ -17,6 +17,10 @@ type TimeSeriesChart struct {
 
 type Date time.Time
 
+func NewDate(t time.Time) Date {
+	return Date(t.UTC().Truncate(24 * time.Hour).UTC())
+}
+
 func (d Date) MarshalJSON() ([]byte, error) {
 	return []byte("\"" + time.Time(d).Format("2006-01-02") + "\""), nil
 }

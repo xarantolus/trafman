@@ -63,6 +63,7 @@ func Repository(db *sql.DB, username, reponame string) (repoInfo BasicRepository
 			left join releaseassets ra on rs.id = ra.release_id
 		where r.username=$1 and r.name=$2
 		group by r.id, r.username, r.name, r.description, r.is_fork, s.stars, s.forks, s.size, s.date_time
+		ORDER BY r.id, s.date_time desc
 		LIMIT 1`, username, reponame)
 
 	err = row.Scan(&repoInfo.ID, &repoInfo.Username, &repoInfo.Name, &repoInfo.Description, &repoInfo.IsFork, &repoInfo.Stars, &repoInfo.Forks, &repoInfo.Size, &repoInfo.LastUpdate, &repoInfo.DownloadCount)

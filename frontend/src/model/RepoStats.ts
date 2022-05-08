@@ -1,8 +1,9 @@
 import { RepositoryInfo } from "./Repository";
 
 export class RepoStats {
-    public repository : RepositoryInfo;
-    public clones : any;
+    public repository: RepositoryInfo;
+    public clones: any;
     public views: any;
     public stats: any;
+    public downloads: any;
 }

@@ -8,6 +8,7 @@
                 <simple-date-chart class="column is-half" chart-title="Clones" :data="stats!.clones" />
                 <simple-date-chart class="column is-half" chart-title="Visitors" :data="stats!.views" />
                 <simple-date-chart class="column is-half" chart-title="Statistics" :data="stats!.stats" />
+                <simple-date-chart class="column is-half" chart-title="Downloads" :data="stats!.downloads" />
             </div>
         </div>
     </div>

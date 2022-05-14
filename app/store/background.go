@@ -119,10 +119,11 @@ func (m *Manager) processRepo(ctx context.Context, repo *github.Repository) (err
 	}
 
 	// Then keep a log of all repo stats
+	// Important: repo.GetWatchersCount() just returns the stargazers count, we need subscribers
 	_, err = m.Database.Exec(`insert into RepoStats(repo_id, stars, forks, size, watchers, date_time)
 								 values ($1, $2, $3, $4, $5, $6)
   							on conflict (repo_id, date_time) do update set stars=EXCLUDED.stars, forks=EXCLUDED.forks, size=EXCLUDED.size, watchers=EXCLUDED.watchers, date_time=EXCLUDED.date_time`,
-		repo.ID, repo.GetStargazersCount(), repo.GetForksCount(), repo.GetSize(), repo.GetWatchersCount(), time.Now().UTC())
+		repo.ID, repo.GetStargazersCount(), repo.GetForksCount(), repo.GetSize(), repo.GetSubscribersCount(), time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("inserting basic repo info: %s", err.Error())
 	}
